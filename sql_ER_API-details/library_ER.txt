@@ -1,0 +1,159 @@
+### Entity Relationship (ER) Diagram
+```
+Users (user_id, name, email, password, role [admin/user])
+Books (id, title, author, isbn, status [available/borrowed], created_at, updated_at)
+BorrowRecords (id, user_id, book_id, borrowed_at, due_date, returned_at, fine_amount)
+```
+
+# Laravel API Design
+
+# Migration Files
+
+// Create Users Table
+Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('email')->unique();
+    $table->string('password');
+    $table->enum('role', ['admin', 'user']);
+    $table->timestamps();
+});
+
+// Create Books Table
+Schema::create('books', function (Blueprint $table) {
+    $table->id();
+    $table->string('title');
+    $table->string('author');
+    $table->string('isbn')->unique();
+    $table->enum('status', ['available', 'borrowed'])->default('available');
+    $table->timestamps();
+});
+
+// Create BorrowRecords Table
+Schema::create('borrow_records', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
+    $table->timestamp('borrowed_at');
+    $table->timestamp('due_date');
+    $table->timestamp('returned_at')->nullable();
+    $table->decimal('fine_amount', 8, 2)->default(0);
+    $table->timestamps();
+});
+
+# API Endpoints
+
+1. **User Registration**
+   - **POST /api/register**
+   - Request Body:
+     json
+     {
+       "name": "string",
+       "email": "string",
+       "password": "string"
+     }
+     
+   - Response:
+     json
+     {
+       "message": "User registered successfully."
+     }
+
+2. **Login**
+   - **POST /api/login**
+   - Request Body:
+     json
+     {
+       "email": "string",
+       "password": "string"
+     }
+     
+   - Response:
+     json
+     {
+       "token": "string"
+     }
+
+3. **Borrow a Book**
+   - **POST /api/books/{book_id}/borrow**
+   - Authorization: Bearer Token (User)
+   - Response:
+     json
+     {
+       "message": "Book borrowed successfully.",
+       "due_date": "YYYY-MM-DD"
+     }
+
+4. **Pay Fine**
+   - **POST /api/borrow-records/{record_id}/pay-fine**
+   - Authorization: Bearer Token (User)
+   - Response:
+     json
+     {
+       "message": "Fine paid successfully."
+     }
+
+5. **Add New Book**
+   - **POST /api/books**
+   - Authorization: Bearer Token (Admin)
+   - Request Body:
+     {
+       "title": "string",
+       "author": "string",
+       "isbn": "string"
+     }
+     
+   - Response:
+     json
+     {
+       "message": "Book added successfully."
+     }
+ 
+
+6. **View All Users**
+   - **GET /api/users**
+   - Authorization: Bearer Token (Admin)
+   - Response:
+     json
+     [
+       {
+         "user_id": "int",
+         "name": "string",
+         "email": "string"
+       }
+     ]
+     
+7. **View All Books with Status**
+   - **GET /api/books**
+   - Authorization: Bearer Token (Admin)
+   - Response:
+     json
+     [
+       {
+         "book_id": "int",
+         "title": "string",
+         "author": "string",
+         "status": "available/borrowed"
+       }
+     ]
+
+8. **View Users Who Borrowed Books**
+   - **GET /api/books/borrowed**
+   - Authorization: Bearer Token (Admin)
+   - Response:
+		json
+     [
+       {
+         "user_id": "int",
+         "name": "string",
+         "book_title": "string",
+         "borrowed_at": "YYYY-MM-DD",
+         "due_date": "YYYY-MM-DD"
+       }
+     ]
+     
+9. **Calculate Fines**
+   - **GET /api/calculate_fine**
+   - Authorization: Bearer Token (Admin)
+   
+	 ]	
